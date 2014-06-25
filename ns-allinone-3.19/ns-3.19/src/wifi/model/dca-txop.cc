@@ -536,31 +536,18 @@ DcaTxop::MissedCts (void)
 //  bool txDone = false;
   if (!NeedRtsRetransmission ())
     {
-	  std::cout<<"drop1! "<<this->m_low->GetValue(1)<<std::endl; // kdw
+//	  std::cout<<"drop1! "<<this->m_low->GetValue(1)<<std::endl; // kdw
 	  reTx=true;
 
-//
-//	  if(this->m_low->GetValue(1) == 1)
-//	  {
-//		  std::cout<<"drop1 main node id : "<<this->m_low->GetDevice()->GetNode()->GetId()<<"  "<<Simulator::Now().GetSeconds()<<" "<<this->m_low->GetPacketId(1)<<std::endl;
-//		  std::cout<<"isTxed "<<this->m_low->GetDevice()->GetIsTXed()<<std::endl;
-//		  if(this->m_low->GetDevice()->GetIsTXed() == 1)
-//		  {
-//			  txDone= true;
-//		  }
-//	  }
-//	  reTx = true;
-//	  this->m_low->GetDevice()->RetransmissionReq();
-
-      NS_LOG_DEBUG ("Cts Fail");
-      m_stationManager->ReportFinalRtsFailed (m_currentHdr.GetAddr1 (), &m_currentHdr);
-      if (!m_txFailedCallback.IsNull ())
-        {
-          m_txFailedCallback (m_currentHdr);
-        }
-      // to reset the dcf.
-      m_currentPacket = 0;
-      m_dcf->ResetCw ();
+	  NS_LOG_DEBUG ("Cts Fail");
+	  m_stationManager->ReportFinalRtsFailed (m_currentHdr.GetAddr1 (), &m_currentHdr);
+	  if (!m_txFailedCallback.IsNull ())
+	  {
+		  m_txFailedCallback (m_currentHdr);
+	  }
+	  // to reset the dcf.
+	  m_currentPacket = 0;
+	  m_dcf->ResetCw ();
     }
   else
     {
@@ -611,10 +598,8 @@ DcaTxop::MissedAck (void)
   bool reTx = false;
   if (!NeedDataRetransmission ())
     {
-	  std::cout<<"drop2!"<<std::endl; //kdw
+//	  std::cout<<"drop2!"<<std::endl; //kdw
 
-//	  reTx = true;
-//	  this->m_low->GetDevice()->RetransmissionReq();
       NS_LOG_DEBUG ("Ack Fail");
       m_stationManager->ReportFinalDataFailed (m_currentHdr.GetAddr1 (), &m_currentHdr);
       if (!m_txFailedCallback.IsNull ())

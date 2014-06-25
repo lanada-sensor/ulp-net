@@ -312,14 +312,10 @@ double MaxNode(int max, int64_t* array, uint32_t nNode)
 			}
 		}
 	}
-//	for(int i=0; i<max; i++)
-//		std::cout<<out[i]<<"\t";
-//	std::cout<<std::endl;
 	double temp =0;
 	for(int i=0; i<max; i++)
 		temp += out[i];
 	temp = temp/(double)max;
-//	std::cout<<temp/1000000.0<<std::endl;
 	return temp;
 }
 
@@ -341,7 +337,7 @@ main (int argc, char *argv[])
   std::string folderName ="result";
   int packetSize = 104;
   int nPacket = 0;
-  endTime = Seconds(60.0);
+  endTime = Seconds(120.0);
   Time endTimeSource = endTime;
 //  Time endTimeSource = Seconds(60.0);
 
@@ -372,9 +368,8 @@ main (int argc, char *argv[])
   cmd.Parse (argc, argv);
 
   // set random seed
-
-
   SeedManager::SetSeed(randomSeed);
+
   // trace init
   wakeupTime = new int64_t[nNode];
   collisionTraceResult = new int64_t[nNode];
@@ -388,7 +383,7 @@ main (int argc, char *argv[])
   }
   // set trace filename
   std::ostringstream fileName;
-  fileName<<"/n"<<nNode<<"_t"<<txpDistance<<"_s"<<packetSize<<"/l"<<lambda<<"_c"<<channelType<<"_r"<<randomSeed;
+  fileName<<"/n"<<nNode<<"_t"<<txpDistance<<"_s"<<packetSize<<"_d"<<dataRate<<"/l"<<lambda<<"_c"<<channelType<<"_r"<<randomSeed;
   std::ofstream *packetTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_packet.txt").c_str());
   std::ofstream *WakeupTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_wakeup.txt").c_str());
   std::ofstream *queueTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_queue.txt").c_str());
@@ -423,7 +418,6 @@ main (int argc, char *argv[])
   ////////////////////////////////////////////////////
   YansWifiChannelHelper mainChannel = YansWifiChannelHelper::Default ();
   YansWifiPhyHelper mainPhy = YansWifiPhyHelper::Default ();
-//  mainPhy.Set("EnergyDetectionThreshold",DoubleValue (-200.0));
   mainChannel.AddPropagationLoss ("ns3::RangePropagationLossModel", "MaxRange", DoubleValue (txpDistance));
 
   Ptr<YansWifiChannel> channel = mainChannel.Create();
@@ -436,7 +430,6 @@ main (int argc, char *argv[])
   NqosWifiMacHelper mainMac = NqosWifiMacHelper::Default ();
   mainMac.SetType ("ns3::AdhocWifiMac");
 
-//  NetDeviceContainer mainDevices;
   mainDevices = mainHelper.Install (mainPhy, mainMac, nodes, addressTable,MAIN_RADIO,1,channelType,dataRate);
 
   ////////////////////////////////////////////////////
@@ -444,14 +437,13 @@ main (int argc, char *argv[])
   ////////////////////////////////////////////////////
   YansWifiChannelHelper ulpChannel = YansWifiChannelHelper::Default ();
   YansWifiPhyHelper ulpPhy = YansWifiPhyHelper::Default ();
-//  ulpPhy.Set("EnergyDetectionThreshold",DoubleValue (-200.0));
   ulpChannel.AddPropagationLoss ("ns3::RangePropagationLossModel", "MaxRange", DoubleValue (txpDistance));
   if(channelType==2){
 	  channel = ulpChannel.Create();
-	  std::cout<<"[Separate Channel]"<<std::endl;
+//	  std::cout<<"[Separate Channel]"<<std::endl;
   }
   else{
-	  std::cout<<"[Shared Channel]"<<std::endl;
+//	  std::cout<<"[Shared Channel]"<<std::endl;
   }
   ulpPhy.SetChannel (channel);
 
@@ -478,8 +470,7 @@ main (int argc, char *argv[])
 		  return 0;
 		  break;
   }
-  ulpHelper.SetRemoteStationManager ("ns3::ConstantRateWifiManager","DataMode",StringValue("DsssWakeupRate100Kbps"),"ControlMode",StringValue("DsssWakeupRate100Kbps"));
-//  ulpHelper.SetRemoteStationManager ("ns3::ConstantRateWifiManager","DataMode",StringValue("DsssWakeupRate50Kbps"),"ControlMode",StringValue("DsssWakeupRate50Kbps"));
+
   NqosWifiMacHelper ulpMac = NqosWifiMacHelper::Default ();
   ulpMac.SetType ("ns3::AdhocWifiMac");
 
@@ -680,24 +671,24 @@ main (int argc, char *argv[])
   int64_t totalWakeupTime =0;
   int64_t totalcollisionTraceResult =0;
   int64_t totalcollisionTraceResultULP =0;
-  std::cout<<std::endl<<"nodeId"<<"\t"<<"Wakeup Time\tcollision main\tULP"<<std::endl;
+//  std::cout<<std::endl<<"nodeId"<<"\t"<<"Wakeup Time\tcollision main\tULP"<<std::endl;
   *resultFile<<std::endl<<"nodeId"<<"\t"<<"Wakeup Time\tcollision main\tULP"<<std::endl;
 
-  std::cout<<0<<"\t"<<wakeupTime[0]<<"\t"<<collisionTraceResult[0]<<"\t"<<collisionTraceResultULP[0]<<std::endl;
+//  std::cout<<0<<"\t"<<wakeupTime[0]<<"\t"<<collisionTraceResult[0]<<"\t"<<collisionTraceResultULP[0]<<std::endl;
   	  *resultFile<<0<<"\t"<<wakeupTime[0]<<"\t"<<collisionTraceResult[0]<<"\t"<<collisionTraceResultULP[0]<<std::endl;
   for(uint32_t i = 1; i < nNode; i++)
   {
-	  std::cout<<i<<"\t"<<wakeupTime[i]<<"\t"<<collisionTraceResult[i]<<"\t"<<collisionTraceResultULP[i]<<std::endl;
+//	  std::cout<<i<<"\t"<<wakeupTime[i]<<"\t"<<collisionTraceResult[i]<<"\t"<<collisionTraceResultULP[i]<<std::endl;
 	  *resultFile<<i<<"\t"<<wakeupTime[i]<<"\t"<<collisionTraceResult[i]<<"\t"<<collisionTraceResultULP[i]<<std::endl;
 	  totalWakeupTime += wakeupTime[i];
 	  totalcollisionTraceResult += collisionTraceResult[i];
 	  totalcollisionTraceResultULP += collisionTraceResultULP[i];
   }
-  std::cout<<"total wake up time : "<<totalWakeupTime<<std::endl;
+//  std::cout<<"total wake up time : "<<totalWakeupTime<<std::endl;
   *resultFile<<"total wake up time : "<<totalWakeupTime<<std::endl;
-  std::cout<<"total collision (main) : "<<totalcollisionTraceResult<<std::endl;
+//  std::cout<<"total collision (main) : "<<totalcollisionTraceResult<<std::endl;
   *resultFile<<"total collision (main) : "<<totalWakeupTime<<std::endl;
-  std::cout<<"total collision (ULP) : "<<totalcollisionTraceResultULP<<std::endl;
+//  std::cout<<"total collision (ULP) : "<<totalcollisionTraceResultULP<<std::endl;
   *resultFile<<"total collision (ULP) : "<<totalWakeupTime<<std::endl;
 
   for(uint32_t i=0; i<nNode; i++){
@@ -705,19 +696,19 @@ main (int argc, char *argv[])
 	  Ptr<RegularWifiMac> temp_regwifimac= temp_dev->GetMac()->GetObject<RegularWifiMac>();
 	  Ptr<DcaTxop> temp_DcaTxop = temp_regwifimac->GetDcaTxop();
 	  Ptr<MacLow> temp_MacLow = temp_DcaTxop->m_low;
-	  std::cout<<temp_MacLow->IsSleep();
+//	  std::cout<<temp_MacLow->IsSleep();
 	  *resultFile<<temp_MacLow->IsSleep();
   }
   std::cout<<std::endl;
   *resultFile<<std::endl;
   for(uint32_t i=0; i<nNode; i++){
 	  Ptr<WifiNetDevice> temp_dev=DynamicCast<WifiNetDevice>(mainDevices.Get(i));
-	  std::cout<<i<<" "<<temp_dev->GetMWQueue()->GetSize()<<std::endl;
+//	  std::cout<<i<<" "<<temp_dev->GetMWQueue()->GetSize()<<std::endl;
 	  *resultFile<<i<<" "<<temp_dev->GetMWQueue()->GetSize()<<std::endl;
 
   }
-  std::cout<<"totalWakeupTime"<<"\t"<<"RX" <<std::endl;
-  std::cout<<totalWakeupTime<<"\t"<<cumulativeBytes[0] <<std::endl;
+//  std::cout<<"totalWakeupTime"<<"\t"<<"RX" <<std::endl;
+//  std::cout<<totalWakeupTime<<"\t"<<cumulativeBytes[0] <<std::endl;
 
   *resultFile<<"totalWakeupTime"<<"\t"<<"RX" <<std::endl;
   *resultFile<<totalWakeupTime<<"\t"<<cumulativeBytes[0] <<std::endl;
