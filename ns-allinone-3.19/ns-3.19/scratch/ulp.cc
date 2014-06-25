@@ -42,7 +42,7 @@ int64_t *collisionTraceResult;
 int64_t *collisionTraceResultULP;
 NetDeviceContainer mainDevices;
 Time endTime;
-
+Ptr<ListPositionAllocator> positionAlloc; //JJHmobility
 
 static void
 CollisionTrace (std::ofstream *ofs, uint32_t nodeId, int32_t old_value, int32_t new_value)
@@ -150,6 +150,13 @@ void SetMobility(NodeContainer nodes, double d1, double d2, int type){
 		for(uint32_t i = 1; i < nodes.GetN(); i++){
 			positionAlloc->Add (Vector (uniformRV->GetValue(), uniformRV->GetValue(), 0.0));
 		}
+		mobility.SetPositionAllocator (positionAlloc);
+		mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
+		mobility.Install (nodes);
+	}
+	else if(type ==3 ) //mobility input from file JJHmobility
+	{
+		MobilityHelper mobility;
 		mobility.SetPositionAllocator (positionAlloc);
 		mobility.SetMobilityModel ("ns3::ConstantPositionMobilityModel");
 		mobility.Install (nodes);
@@ -320,6 +327,28 @@ double MaxNode(int max, int64_t* array, uint32_t nNode)
 }
 
 
+Ptr<ListPositionAllocator>
+GetMobilityFile(std::ifstream* input) //JJHmobility
+{
+	Ptr<ListPositionAllocator> positionAlloc = CreateObject<ListPositionAllocator> ();
+	if(!(*input).is_open())
+	{
+		std::cout<<"Mobility File open fail! \n";
+
+	}
+	double x_val,y_val;
+	uint32_t num_mobility;
+	*input>>num_mobility;
+	//		std::cout<<num_mobility<<std::endl;
+	for(uint32_t i=0; i<num_mobility;i++)
+	{
+		*input>>x_val>>y_val;
+		//			std::cout<<x_val<<"\t"<<y_val<<std::endl;
+		positionAlloc->Add (Vector (x_val, y_val, 0.0));
+	}
+	return positionAlloc;
+}
+
 int 
 main (int argc, char *argv[])
 {
@@ -335,6 +364,7 @@ main (int argc, char *argv[])
   double gridDelta = 10.0;
   double range = 50.0;
   std::string folderName ="result";
+  std::string mobilityFolder = "mobility";
   int packetSize = 104;
   int nPacket = 0;
   endTime = Seconds(120.0);
@@ -385,7 +415,7 @@ main (int argc, char *argv[])
   std::ostringstream fileName;
   fileName<<"/n"<<nNode<<"_t"<<txpDistance<<"_s"<<packetSize<<"_d"<<dataRate<<"/l"<<lambda<<"_c"<<channelType<<"_r"<<randomSeed;
   std::ofstream *packetTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_packet.txt").c_str());
-  std::ofstream *WakeupTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_wakeup.txt").c_str());
+  std::ofstream *wakeupTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_wakeup.txt").c_str());
   std::ofstream *queueTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_queue.txt").c_str());
   std::ofstream *collisionTrace = new std::ofstream ((folderName+"/"+fileName.str()+"_collision_main.txt").c_str());
   std::ofstream *collisionTraceULP = new std::ofstream ((folderName+"/"+fileName.str()+"_collision_ulp.txt").c_str());
@@ -393,6 +423,7 @@ main (int argc, char *argv[])
   std::ofstream *simulationFile = new std::ofstream ((folderName+"/"+fileName.str()+"_simulation.txt").c_str());
   std::cout<<folderName<<fileName.str()<<std::endl;
 
+  std::ifstream *mobilityFile = new std::ifstream ((mobilityFolder+"/mobility_input.txt").c_str()); //JJHmobility
 
   if (verbose)
     {
@@ -479,7 +510,8 @@ main (int argc, char *argv[])
   ////////////////////////////////////////////////////
   // set mobility
   ////////////////////////////////////////////////////
-  SetMobility(nodes, gridDelta, gridWidth, 1);
+  positionAlloc=GetMobilityFile(mobilityFile); //JJHmobility
+  SetMobility(nodes, gridDelta, gridWidth, mobilityType); //JJHmobility
 //  SetMobility(nodes, -50.0, 50.0, 2);
 
 
@@ -606,7 +638,7 @@ main (int argc, char *argv[])
 	  Ptr<DcaTxop> temp_DcaTxop = temp_regwifimac->GetDcaTxop();
 	  Ptr<MacLow> temp_MacLow = temp_DcaTxop->m_low;
 	  //	  Ptr<MacLow> temp_MacLow = temp_DcaTxop->GetObject<MacLow>(); //
-	  temp_MacLow->TraceConnectWithoutContext("SleepCount",MakeBoundCallback (&SleepWakeup,WakeupTrace,i));
+	  temp_MacLow->TraceConnectWithoutContext("SleepCount",MakeBoundCallback (&SleepWakeup,wakeupTrace,i));
   }
 
   // Queue trace //
@@ -666,7 +698,7 @@ main (int argc, char *argv[])
 
   /* Wake up time trace */
   for(uint32_t i=0; i<nNode; i++)
-	  SleepWakeup (WakeupTrace, i, -1,-2);
+	  SleepWakeup (wakeupTrace, i, -1,-2);
 
   int64_t totalWakeupTime =0;
   int64_t totalcollisionTraceResult =0;
