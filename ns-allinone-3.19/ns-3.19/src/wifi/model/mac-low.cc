@@ -1568,16 +1568,21 @@ MacLow::NotifyNav (Ptr<const Packet> packet,const WifiMacHeader &hdr, WifiMode t
 {
   NS_ASSERT (m_lastNavStart <= Simulator::Now ());
 
+  Time duration;
   if(this->channelType == 1)
   {
 	  if(this->isMain == 2)
 	  {
-		  Time duration = hdr.GetDuration () + hdr.GetDuration ();
+		  duration = hdr.GetDuration () + hdr.GetDuration ();
+	  }
+	  else
+	  {
+		  duration = hdr.GetDuration ();
 	  }
   }
   else
   {
-	  Time duration = hdr.GetDuration ();
+	  duration = hdr.GetDuration ();
   }
   if (hdr.IsCfpoll ()
       && hdr.GetAddr2 () == m_bssid)
